@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>pi agent and tmux tips and tricks</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;line-height:1.6;color:#1a1a1a;background:#fafafa;padding:1rem;max-width:800px;margin:0 auto}
+    h1{font-size:1.5rem;margin-bottom:1rem}
+    .entries{list-style:none}
+    .entries li{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:1rem;margin-bottom:.75rem}
+    .entries li.empty{color:#999;text-align:center}
+    .entries>li>a{font-weight:600;color:#2563eb;text-decoration:none;font-size:1.1rem;text-transform:capitalize}
+    .date{display:block;color:#888;font-size:.85rem}
+    .models{margin-top:.5rem;display:flex;flex-wrap:wrap;gap:.4rem}
+    .model-link{font-size:.75rem;background:#f0f0f0;color:#555;padding:.15rem .5rem;border-radius:4px;text-decoration:none}
+    .back{display:inline-block;margin-bottom:1rem;color:#2563eb;text-decoration:none;font-size:.9rem}
+    .report-nav{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1.5rem}
+    .report-nav a{font-size:.8rem;padding:.3rem .7rem;background:#e8e8e8;border-radius:6px;text-decoration:none;color:#333}
+    .report-nav a.active{background:#2563eb;color:#fff}
+    #content h1{font-size:1.4rem;margin:1.5rem 0 .5rem}
+    #content h2{font-size:1.2rem;margin:1.2rem 0 .4rem;color:#333}
+    #content h3{font-size:1.05rem;margin:1rem 0 .3rem}
+    #content p{margin:.5rem 0}
+    #content ul,#content ol{padding-left:1.5rem;margin:.5rem 0}
+    #content li{margin:.25rem 0}
+    #content code{background:#f0f0f0;padding:.15rem .3rem;border-radius:3px;font-size:.9em}
+    #content pre{background:#f5f5f5;padding:1rem;border-radius:6px;overflow-x:auto;margin:.5rem 0}
+    #content table{border-collapse:collapse;width:100%;margin:.5rem 0;font-size:.9rem}
+    #content th,#content td{border:1px solid #ddd;padding:.4rem .6rem;text-align:left}
+    #content th{background:#f5f5f5}
+    #content blockquote{border-left:3px solid #ddd;padding-left:1rem;color:#666;margin:.5rem 0}
+    #content hr{border:none;border-top:1px solid #e0e0e0;margin:1.5rem 0}
+  </style>
+</head>
+<body>
+    <a href="../" class="back">← all research</a>
+    <nav class="report-nav"><a href="index.html">📋 Summary</a><a href="anthropic-claude-sonnet-4-6.html">anthropic-claude-sonnet-4-6</a><a href="google-antigravity-gemini-3-flash.html" class="active">google-antigravity-gemini-3-flash</a></nav>
+    <div id="content"></div>
+    <script>
+      const md = "# pi-agent and tmux tips and tricks — google-antigravity/gemini-3-flash\n\n---\n\n# Pi-Agent and Tmux: Tips and Tricks\n\nThis report covers advanced usage and optimization tips for the `pi-agent` (`@mariozechner/pi-coding-agent`) and its integration with `tmux` for parallel agent workflows.\n\n---\n\n## 🚀 Pi-Agent: Core Interactivity Tips\n\n### 1. Smart Context Management\n- **File References (`@`):** Type `@` in the editor to fuzzy-search and include files in your prompt. This is faster and more precise than manually typing paths.\n- **Context Compaction (`/compact`):** If a session gets too long, use `/compact` to summarize previous messages and free up context window space. You can provide custom instructions for the summary.\n- **Ephemeral Sessions (`--no-session`):** Use this flag for one-off tasks where you don't want to clutter your session history.\n\n### 2. Powerful Commands & Shortcuts\n- **Bash Execution (`!` vs `!!`):**\n    - `!command`: Runs the command and sends the output to the LLM.\n    - `!!command`: Runs the command locally without sending output (useful for quick side-tasks).\n- **Thinking Levels (`Shift+Tab`):** Quickly cycle through thinking levels (`off`, `minimal`, `low`, `medium`, `high`, `xhigh`) depending on the complexity of the task.\n- **Message Queuing:**\n    - `Enter`: Submits a *steering* message that interrupts current tool execution.\n    - `Alt+Enter`: Submits a *follow-up* message that only delivers after the agent completes all current work.\n- **Session Tree (`/tree` or `Esc Esc`):** Jump back to any point in the history and branch off. This is much better than \"undoing\" manually.\n\n### 3. Editor Tricks\n- **Multi-line Input:** Use `Shift+Enter` for multi-line messages (ensure your terminal is configured for the Kitty keyboard protocol).\n- **External Editor (`Ctrl+G`):** If the terminal editor is too limiting, hit `Ctrl+G` to open the current buffer in your `$EDITOR` (e.g., Vim, Nano).\n- **Clipboard Integration:** `Ctrl+V` (or `Alt+V` on Windows) pastes images directly from your clipboard into the agent session.\n\n---\n\n## 🛠️ Advanced Customization\n\n### 1. Skills and Prompt Templates\n- **Prompt Templates:** Create `.md` files in `.pi/prompts/` to define reusable prompt snippets (e.g., `/review`, `/test`).\n- **Skills:** Define modular capabilities in `SKILL.md` files following the [Agent Skills standard](https://agentskills.io). Pi can load these automatically when relevant.\n\n### 2. Extensions\nExtensions are the most powerful way to customize Pi. They allow you to:\n- Register custom tools and commands.\n- Modify compaction behavior.\n- Add UI widgets to the footer or overlays.\n- Implement sub-agent flows or MCP integrations.\n\n---\n\n## 🐚 Tmux Integration: Parallel Agent Workflows\n\nThe `coco-personal-assistant` project demonstrates a sophisticated \"Fan-Out\" pattern using tmux to orchestrate multiple agents.\n\n### 1. Orchestration Strategy\n- **Controller/Worker Architecture:** Use one pane (Pane 0) as the \"Controller\" to read files and orchestrate. Spawn \"Worker\" panes for heavy lifting (builds, tests, or other agents).\n- **Dynamic Pane Tiling:** Use `tmux select-layout main-vertical` and `tmux resize-pane` to maintain a consistent workspace layout (e.g., 65% width for the main controller).\n\n### 2. Fan-Out Pattern (Multi-Model Research)\n- **Staggered Spawns:** When launching multiple pi instances simultaneously, add a short delay (e.g., `sleep 5`) between spawns to prevent lockfile contention on `~/.pi/agent/auth.json`.\n- **Readiness Detection:** Before sending tasks to a tmux-managed agent, capture the pane output and check for the pi status bar (e.g., the presence of `$0.000` or the cost indicator). This ensures the agent is fully booted and ready for input.\n- **Task Injection via Files:** Instead of sending long strings via `tmux send-keys`, write the task to a temp file and launch pi with `pi @/tmp/task.md`. This avoids escaping issues and ensures the agent starts working immediately.\n\n### 3. Clean Output Collection\n- **Terminal Noise Filtering:** When using `tmux capture-pane` to collect results from an agent, filter out terminal noise such as:\n    - Status bars and spinners (⠋⠙⠹...).\n    - Separator lines (───).\n    - Session path lines (~/...).\n    - Authentication/version messages.\n- **File-First Collection:** Instruct worker agents to save their final output to a specific file (e.g., `/tmp/result.md`) and use `tmux capture` only as a fallback.\n\n---\n\n## 🔧 Setup & Troubleshooting\n\n### 1. Terminal Configuration\nFor the best experience (especially `Shift+Enter` and modifier detection), ensure your terminal supports the **Kitty keyboard protocol**. \n- **Ghostty/WezTerm:** Highly recommended as they support it natively.\n- **VS Code/Windows Terminal:** Require specific `sendSequence` keybindings (see Pi docs).\n\n### 2. IPv6 Issues\nIf Telegram or other APIs hang, it might be an IPv6 routing issue. A common fix is to force IPv4 in Node.js by monkey-patching `https.Agent` to inject an IPv4-only DNS lookup, as seen in the `coco-personal-assistant` entry point.\n\n### 3. Subscription Management\nUse `/login` to manage your Claude Pro, ChatGPT Plus, or Google Gemini subscriptions through the Pi SDK without needing individual API keys for every provider.\n";
+      document.getElementById('content').innerHTML = marked.parse(md);
+    </script>
+  </body>
+</html>
